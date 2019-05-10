@@ -30,12 +30,32 @@ def create_udp_ack(seq):
 	packet.extend((8).to_bytes(2, byteorder='big'))
 	# unsigned 4 bytes for sequence number
 	packet.extend(seq.to_bytes(4, byteorder='big'))
-	# 504 bytes for data
-	packet.extend(data)
 
 	return packet	
 
 
 
 def calculate_checksum():
-	return bytearray()
+
+	cksum = bytearray()
+	cksum.extend((6).to_bytes(2, byteorder='big'))
+
+	return cksum
+
+
+
+def packet_parser(packet):
+
+	cksum = packet[0: 2]
+	length = int.from_bytes(packet[2: 4], byteorder='big')
+	seq_no = int.from_bytes(packet[4: 8], byteorder='big')
+
+	if len(packet) > 8:
+
+		data = packet[8:]
+
+	else:
+		data = ""
+
+	return seq_no, data
+

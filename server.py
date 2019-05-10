@@ -9,10 +9,20 @@ def start_server(server_port, window, rand_seed, loss_prob, server_ip="127.0.0.1
 	server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	server_socket.bind((server_ip, server_port))
 
+	requests_pool = []
+
 	while 1:
-		request, addr = server_socket.recvfrom(1024)
-		print(request, addr)
-		threading.Thread(target=RDT.RequestHandler, args=(request, addr,window, rand_seed, loss_prob,)).start()
+		try:
+			request, addr = server_socket.recvfrom(1024)
+			# print(request, addr)
+			requests_pool.append(threading.Thread(target=RDT.RequestHandler, args=(request, addr,window, rand_seed, loss_prob,)))
+			requests_pool[-1].start()
+
+		except KeyboardInterrupt:
+			break
+
+	for req in requests_pool:
+		req.join()
 
 
 def main():
