@@ -25,8 +25,15 @@ def start_server(server_port, window, rand_seed, loss_prob, server_ip="127.0.0.1
 		req.join()
 
 
+
 def main():
-	start_server(55055, 2, 0,0)
+
+	with open("server.in", "r") as config:
+
+		parameters = config.read().split("\n")
+
+	start_server(int(parameters[0]), int(parameters[1]), int(parameters[2]), float(parameters[3]))
+
 
 
 if __name__ == '__main__':

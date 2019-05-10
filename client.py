@@ -17,8 +17,6 @@ def request_file(file_name, server_port, server_ip="127.0.0.1"):
 			client_socket.sendto(request, (server_ip, server_port))
 			data_packet, addr = client_socket.recvfrom(1024)
 			exp_seq, data = packet.packet_parser(data_packet)
-			print(data_packet)
-			print("move on")
 			break
 
 		except socket.timeout:
@@ -35,6 +33,7 @@ def request_file(file_name, server_port, server_ip="127.0.0.1"):
 
 			if data == b'EOF':
 				ack = packet.create_udp_ack(seq_no)
+				client_socket.sendto(ack, addr)
 				break
 			print(data)
 			with open(file_name, "ab") as f:
@@ -45,15 +44,25 @@ def request_file(file_name, server_port, server_ip="127.0.0.1"):
 			print(ack)
 			exp_seq += 1
 
+		# Handling lost ACKs
 		elif seq_no < exp_seq:
 			ack = packet.create_udp_ack(seq_no)
 			client_socket.sendto(ack, addr)
-
-
 
 	client_socket.close()
 
 		
 
+def main():
 
-request_file("file1", 55055)
+	with open("client.in", "r") as config:
+
+		parameters = config.read().split("\n")
+
+
+	request_file(parameters[3], int(parameters[1]), parameters[0])
+
+
+
+if __name__ == '__main__':
+	main()

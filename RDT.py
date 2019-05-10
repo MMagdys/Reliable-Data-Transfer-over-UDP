@@ -19,7 +19,7 @@ class RequestHandler(object):
 		self.data_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 		self.data_socket.bind((self.server_addr, 0))
-		self.data_socket.settimeout(0.5)
+		self.data_socket.settimeout(0.1)
 
 		print(request)
 
@@ -40,14 +40,15 @@ class RequestHandler(object):
 	def send(self, data):
 		
 		data_packet = packet.create_udp_packet(self.seq_no, data)
-		print(data_packet)
 		while 1:
 			try:
-				self.data_socket.sendto(data_packet, self.dest_addr)
+				if random.random() < self.loss_prob:
+					self.data_socket.sendto(data_packet, self.dest_addr)
 				ack = self.data_socket.recvfrom(1024)
-				print("ACKED")
+				# print("ACKED")
 				break
 			except socket.timeout:
+				print("[-] Packet Timeout: packet may be lost\nRetransmitting....")
 				continue		
 		
 
