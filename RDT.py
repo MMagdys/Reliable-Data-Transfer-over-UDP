@@ -32,8 +32,8 @@ class RequestHandler(object):
 		if method == "stop_and_wait":
 			self.stop_wait()
 
-		elif method == "selective_repeat":
-			pass
+		elif method == "go_back_n":
+			self.GBN()
 
 
 
@@ -48,7 +48,7 @@ class RequestHandler(object):
 				# print("ACKED")
 				break
 			except socket.timeout:
-				print("[-] Packet Timeout: packet may be lost\nRetransmitting....")
+				print("[-] Packet Timeout: packet may be lost\nRetransmitting packet with sequence",self.seq_no,"...." )
 				continue		
 		
 
@@ -69,6 +69,38 @@ class RequestHandler(object):
 		self.send("EOF")
 
 		self.data_socket.close()
+
+
+
+	def selective_repeat(self):
+
+		pass
+
+
+
+	def GBN(self):
+
+		self.base_seq = seq_no
+		self.next_seq = seq_no
+
+		with open("tests/" + self.file_name, "rb") as f :
+
+			data = f.read(self.max_data_size)
+
+			while data :
+
+				if self.next_seq < self.base_seq + self.window_size:
+
+					data_packet = packet.create_udp_packet(self.seq_no, data)
+					self.data_socket.sendto(data_packet, self.dest_addr)
+
+
+					self.send(data)
+					data = f.read(self.max_data_size)
+					self.seq_no = ( self.seq_no + 1 ) % 65538
+
+		self.send("EOF")
+
 
 
 
